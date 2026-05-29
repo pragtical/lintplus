@@ -40,6 +40,10 @@ local StatusView = require "core.statusview"
 
 local liteipc = require "plugins.lintplus.liteipc"
 
+local function is_docview(view)
+  return view and type(view.extends) == "function" and view:extends(DocView)
+end
+
 
 local lint = {}
 lint.fs = require "plugins.lintplus.fsutil"
@@ -509,12 +513,22 @@ local function get_underline_y(dv, line)
   return y + line_height - extra_space / 2
 end
 
+local function is_message_line_visible(dv, line)
+  return not dv.is_line_visible or dv:is_line_visible(line)
+end
+
 local function draw_gutter_rail(dv, index, messages)
   local rail = messages.rails[index]
   if rail == nil or #rail < 2 then return end
 
-  local first_message = rail[1]
-  local last_message = rail[#rail]
+  local first_message, last_message
+  for _, message in ipairs(rail) do
+    if is_message_line_visible(dv, message.line) then
+      first_message = first_message or message
+      last_message = message
+    end
+  end
+  if not first_message or first_message == last_message then return end
 
   local x = get_gutter_rail_x(dv, index)
   local rw = rail_width(dv)
@@ -523,21 +537,26 @@ local function draw_gutter_rail(dv, index, messages)
 
   -- connect with lens
   local line_x = x + rw
-  for i, message in ipairs(rail) do
-    -- connect with lens
-    local lx, _ = dv:get_line_screen_position(message.line)
-    local ly = get_underline_y(dv, message.line)
-    local line_messages = messages.lines[message.line]
-    if line_messages ~= nil then
-      local column = line_messages[1].column
-      local message_left = line_messages[1].message:sub(1, column - 1)
-      local line_color = get_message_group_color(line_messages)
-      local xoffset = (x + rw) % 2
-      local line_w = dv:get_font():get_width(message_left) - line_x + lx
-      renderutil.draw_dotted_line(x + rw + xoffset, ly, line_w, 'x', line_color)
-      -- draw curve
-      ly = ly - rw * (i == 1 and 0 or 1) + (i ~= 1 and 1 or 0)
-      renderutil.draw_quarter_circle(x, ly, rw, style.accent, i > 1)
+  local visible_index = 0
+  for _, message in ipairs(rail) do
+    if is_message_line_visible(dv, message.line) then
+      visible_index = visible_index + 1
+      -- connect with lens
+      local lx, _ = dv:get_line_screen_position(message.line)
+      local ly = get_underline_y(dv, message.line)
+      local line_messages = messages.lines[message.line]
+      if line_messages ~= nil then
+        local column = line_messages[1].column
+        local message_left = line_messages[1].message:sub(1, column - 1)
+        local line_color = get_message_group_color(line_messages)
+        local xoffset = (x + rw) % 2
+        local line_w = dv:get_font():get_width(message_left) - line_x + lx
+        renderutil.draw_dotted_line(x + rw + xoffset, ly, line_w, 'x', line_color)
+        -- draw curve
+        ly = ly - rw * (visible_index == 1 and 0 or 1)
+          + (visible_index ~= 1 and 1 or 0)
+        renderutil.draw_quarter_circle(x, ly, rw, style.accent, visible_index > 1)
+      end
     end
   end
 
@@ -785,7 +804,7 @@ if StatusView["add_item"] then
       if
         doc and doc.filename  -- skip new files
         and
-        getmetatable(core.active_view) == DocView
+        is_docview(core.active_view)
         and
         (
           lint.get_linter_for_doc(doc)
@@ -820,7 +839,7 @@ else
     if
       doc and doc.filename  -- skip new files
       and
-      getmetatable(core.active_view) == DocView
+      is_docview(core.active_view)
       and
       (
         lint.get_linter_for_doc(doc)
