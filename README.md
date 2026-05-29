@@ -1,24 +1,20 @@
 # lint+
 
-An improved linting plugin for [Lite XL](https://github.com/lite-xl/lite-xl).
+An improved linting plugin for [Pragtical](https://github.com/pragtical/pragtical).
 
 Includes compatibility layer for [`linter`](https://github.com/drmargarido/linters).
 
 ## Screenshots
 
 ![1st screenshot](screenshots/1.png)
-<p align="center">
+
 Features ErrorLens-style warnings and error messages for quickly scanning
 through code for errors.
-</p>
-
-<br>
 
 ![2nd screenshot](screenshots/2.png)
-<p align="center">
+
 The status view shows either the first error, or the full message of the error
 under your text cursor. No mouse interaction needed!
-</p>
 
 
 ## Motivation
@@ -50,7 +46,7 @@ $ git clone https://github.com/liquidev/lintplus
 ```
 
 To enable the different linters available on the [linters](linters/)
-subdirectory, you have to load them on your lite-xl user module file (`init.lua`).
+subdirectory, you have to load them on your user module file (`init.lua`).
 
 You can load a single linter:
 ```lua
@@ -77,7 +73,7 @@ reported by `linter` linters will be reported with the `warning` level.
 ### Automatic Linting
 
 To enable automatic linting upon opening/saving a file, add the following
-code tou your lite-xl user module:
+code tou your user module:
 ```lua
 local lintplus = require "plugins.lintplus"
 lintplus.setup.lint_on_doc_load()
@@ -88,7 +84,7 @@ automatic linting.
 
 ## Commands
 
-Available commands from the lite-xl commands palette (ctrl+shift+p):
+Available commands from the commands palette (ctrl+shift+p):
 
 * `lint+:check` - run the appropriate linter command for the current document
 * `lint+:goto-previous-message` (alt+up) - jump to previous message on current document
@@ -284,4 +280,3 @@ config.lint.luacheck_args = { "--max-line-length=80", "--std=love" }
 - It is unable to underline the offending token, simply because some linter
   error messages do not contain enough information about where the error start
   and end is. It will highlight the correct line and column, though.
-
