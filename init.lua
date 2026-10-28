@@ -154,6 +154,7 @@ function lint.clear_messages(filename, source)
         end
       end
     end
+    core.redraw = true
   end
 end
 
@@ -186,6 +187,7 @@ function lint.add_message(filename, line, column, kind, message, rail, source)
     rail = rail,
     source = source,
   })
+  core.redraw = true
 end
 
 

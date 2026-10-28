@@ -4,7 +4,7 @@
       "id": "lintplus",
       "name": "Lint+",
       "description": "An improved linting plugin.",
-      "version": "0.8",
+      "version": "0.8.1",
       "mod_version": "3.11",
       "tags": [
         "linter"
